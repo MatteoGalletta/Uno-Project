@@ -42,7 +42,11 @@ var UnoCount; // Serve a far partire un timer per il tasto Uno
 var statoCrediti; // Flag per gestire l'apertura del popup "crediti"
 var menuIsShown; // Flag che rappresenta la presenza/assenza del menu
 var gameEnded; // Flag che indica la fine del gioco
-
+var punteggioCalcolato; // Flag che indica se il punteggio è stato calcolato o meno
+var counterStampaIsOn; // Flag che indica se il counterStampa è attivo
+let punteggio; // Contiene il punteggio dei giocatori
+let counterStampa; // Serve a stampare la classifica con un delay
+  
 var ImageWidth; // Larghezza di ogni carta
 var ImageHeight; // Altezza di ogni carta
 
@@ -72,6 +76,7 @@ var senso = []; // Conserva le immagini delle frecce che indicano il giro attual
 var imageMenu = []; // Conserva le immagini inerenti al menu
 var classificaImage = []; // Conserva le immagini per la classifica finale
 var sfondoCrediti; // Conserva l'immagine sfondo dei crediti
+var fontClassifica;
 
 
  /*******************************************
@@ -97,6 +102,7 @@ function preload() {
     wallpapers[i] = loadImage("Wallpapers\\" + i + ".jpg");
   }
   
+  
   senso[0] = loadImage("Senso\\0.png");
   senso[1] = loadImage("Senso\\1.png");
   
@@ -109,6 +115,7 @@ function preload() {
   }
   
   sfondoCrediti = loadImage("Menu\\3.jpg");
+  fontClassifica = loadFont("Fonts\\0.ttf");
 }
 
  /*******************************************
@@ -128,6 +135,7 @@ function setup() {
   fullscreen(true);
   frameRate(60);
   InizializzazioneGame();
+  gameEnded = true; // to remove
 }
 
  /*******************************************
@@ -151,6 +159,9 @@ function InizializzazioneGame() {
   statoCrediti = false;
   menuIsShown = true;
   gameEnded = false;
+  punteggioCalcolato = false;
+
+  counterStampaIsOn = true;
   
   for(let i = 0; i < 4; i++) {
     CarteGiocatoriN[i] = 0;
@@ -260,17 +271,6 @@ function draw() {
   }
   
   // --- INIZIO GIOCO ---
-  // Il gioco continua, quindi ogni giocatore butta una carta per turno
-  /*
-  if(cardsToGive == false) { // Il giocatore attuale, viene evidenziato
-
-    if(TurnoAttuale == 0) image(effects[0], width/2, height, width*0.46, height*0.46); else
-    if(TurnoAttuale == 1) image(effects[1], 0, height/2, width*0.156, height*0.8); else
-    if(TurnoAttuale == 2) image(effects[0], width/2, 0, width*0.46, height*0.46); else
-    if(TurnoAttuale == 3) image(effects[1], width, height/2, width*0.156, height*0.8);
-    
-  }
-  */
   
   if(ContaFrame == 90 && mustChooseColor == false) { // Tra un bot e l'altro, passano 120 frames
     
@@ -283,7 +283,7 @@ function draw() {
     UnoCount++;
   }
   
-  if(UnoCount == 90) {
+  if(UnoCount == 150) {
     mustClickUno = false;
     UnoCount = 0;
     
@@ -315,7 +315,7 @@ function mouseClicked() {
       UnoCount = 0;
     }
     else {
-      UnoCount = 90;
+      UnoCount = 150;
     }
   }
   
@@ -874,16 +874,16 @@ function crediti() {
   }
 }
 
+
+
  /*******************************************
  *                                          *
- * Stampa il podio, la classifica.  *
+ *     Stampa il podio, la classifica.      *
  *      il mazzo di carte. Realizza         *
  *        per compattare il codice          *
  *                                          *
  *******************************************/
 function classifica() {
-  
-  // --- Manca la parte per il calcolo del punteggio --- 
 
   image(classificaImage[0], width/2, height/2, width, height);
   
@@ -929,8 +929,137 @@ function classifica() {
     }
     
   } else document.body.style.cursor = "default";
- 
+
+  // Calcolo del punteggio
+  if(punteggioCalcolato == false) {
+  	punteggioCalcolato = true;
+  	punteggio = contaPunti();
+  	SeleSort(punteggio);
+  	counterStampa = 0;
+  }
+  
+  // Vengono stampate le scritte nella classifica
+  textFont(fontClassifica); fill(255);
+  textSize(width/30); textAlign(CENTER, CENTER);
+  strokeWeight(5);
+
+  if(counterStampa >= 120) {
+	
+  	stroke(100);
+
+  	let L = 0.16 * width;
+  	let A = 0.11 * height;
+  	let x = 0.613 * width;
+  	let y = height - height*0.62;
+
+  	//text("P1", x + L/2, y + A/2);
+  	text(("P" + str(punteggio[0].pos+1)), x + L/2, y + A/2);
+  	print(("P" + str(punteggio[0].pos)));
+
+  }
+  if(counterStampa >= 240) {
+
+  	let L = 0.16 * width;
+  	let A = 0.11 * height;
+  	let x = 0.42 * width;
+  	let y = height - height*0.62;
+
+  	//text("P2",x + L/2, y + A/2);
+  	text(("P" + str(punteggio[1].pos+1)), x + L/2, y + A/2);
+  	print(("P" + str(punteggio[1].pos)));
+
+  }
+  if(counterStampa >= 360) {
+
+  	let L = 0.16 * width;
+  	let A = 0.11 * height;
+  	let x = 0.227 * width;
+  	let y = height - height*0.62
+
+  	//text("P3", x + L/2, y + A/2);
+  	text(("P" + str(punteggio[2].pos+1)), x + L/2, y + A/2);
+  	print(("P" + str(punteggio[2].pos)));
+
+  }
+  if(counterStampa >= 480) {
+
+  	// Stampa P* per Vincitore
+  	let L = 0.22 * width;
+  	let A = 0.11 * height;
+  	let x = 0.39 * width;
+  	let y = height - height*0.80;
+
+  	text(("P" + str(punteggio[3].pos+1)), x + L/2, y + A/2);
+  	
+  	counterStampaIsOn = false;
+  }
+
+  if(counterStampaIsOn) counterStampa++;
+
+
 }
+
+
+
+ /*******************************************
+ *                                          *
+ * Funzione di ordinamento, tramite tecnica *
+ *   SeleSort. Ordina lo struct punteggio   *
+ *                                          *
+ *******************************************/
+function SeleSort(a) {
+
+  let min, temp;
+
+  let i, j;
+  
+  for (i = 0; i < NumeroGiocatori - 1; i++) {
+    min = i;
+
+    for (j = i + 1; j < NumeroGiocatori; j++)
+      if (a[j].val < a[min].val)
+        min = j;
+
+    temp = a[min];
+    a[min] = a[i];
+    a[i] = temp;
+  }
+}
+
+
+
+ /*******************************************
+ *                                          *
+ * Calcola il punteggio che ogni giocatore  *
+ *    ottiene, in base alle loro carte al   *
+ *        termine della partita             *
+ *                                          *
+ *******************************************/
+function contaPunti() {
+
+  let punteggio = [];
+
+  for (let i = 0; i < 4; i++) {
+
+  	punteggio.push({pos: i, val: 0});
+    
+    for (let j = 0; j < CarteGiocatoriN[i]; j  ) {
+
+      //Valore carte " 4" e "Cambio colore" = 50
+      if (CarteGiocatori[i][j].Valore == 13 || CarteGiocatori[i][j].Valore == 14)
+        punteggio[i].val = 50;
+      //Valore carte "Cambio giro", "Stop" e " 2" = 20
+      else if (CarteGiocatori[i][j].Valore >= 10 || CarteGiocatori[i][j].Valore <= 12)
+        punteggio[i].val = 20;
+      //Valore carte normali
+      else punteggio[i].val  = CarteGiocatori[i][j].Valore;
+    }
+  }
+
+  return punteggio;
+}
+
+
 
  /*******************************************
  *                                          *
