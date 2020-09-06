@@ -68,7 +68,6 @@ var Immagini = [ // Conserva le immagini di tutte le carte
   []  // Gray
 ];
 var wallpapers = []; // Conserva gli sfondi, che cambiano in base al colore attuale
-var effects = []; // Conserva le immagini che illuminano le carte del giocatore attuale
 var senso = []; // Conserva le immagini delle frecce che indicano il giro attuale
 var imageMenu = []; // Conserva le immagini inerenti al menu
 var classificaImage = []; // Conserva le immagini per la classifica finale
@@ -97,9 +96,6 @@ function preload() {
   for(let i = 0; i < 5; i++) {
     wallpapers[i] = loadImage("Wallpapers\\" + i + ".jpg");
   }
-  
-  effects[0] = loadImage("Effects\\0.png");
-  effects[1] = loadImage("Effects\\1.png");
   
   senso[0] = loadImage("Senso\\0.png");
   senso[1] = loadImage("Senso\\1.png");
