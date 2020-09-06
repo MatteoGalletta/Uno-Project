@@ -129,7 +129,7 @@ function setup() {
   createCanvas(window.innerWidth, window.innerWidth/1.78);
   //createCanvas(960, 540);
   //createCanvas(1920,1080);
-  //fullscreen(true);
+  fullscreen(true);
   frameRate(60);
   InizializzazioneGame();
 }
