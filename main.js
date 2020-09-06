@@ -135,7 +135,6 @@ function setup() {
   fullscreen(true);
   frameRate(60);
   InizializzazioneGame();
-  gameEnded = true; // to remove
 }
 
  /*******************************************
@@ -943,7 +942,7 @@ function classifica() {
   textSize(width/30); textAlign(CENTER, CENTER);
   strokeWeight(5);
 
-  if(counterStampa >= 120) {
+  if(counterStampa >= 90) {
 	
   	stroke(100);
 
@@ -957,7 +956,7 @@ function classifica() {
   	print(("P" + str(punteggio[0].pos)));
 
   }
-  if(counterStampa >= 240) {
+  if(counterStampa >= 180) {
 
   	let L = 0.16 * width;
   	let A = 0.11 * height;
@@ -969,7 +968,7 @@ function classifica() {
   	print(("P" + str(punteggio[1].pos)));
 
   }
-  if(counterStampa >= 360) {
+  if(counterStampa >= 270) {
 
   	let L = 0.16 * width;
   	let A = 0.11 * height;
@@ -981,7 +980,7 @@ function classifica() {
   	print(("P" + str(punteggio[2].pos)));
 
   }
-  if(counterStampa >= 480) {
+  if(counterStampa >= 360) {
 
   	// Stampa P* per Vincitore
   	let L = 0.22 * width;
