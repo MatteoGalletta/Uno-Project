@@ -6,7 +6,7 @@ Made by:
   Flavio Carpinteri,
   Kevin Speranza.
   
-To play the game, visit the wesbite that follows:
+To play the game, visit the wesbite that follows: http://shazeofshiny.github.io/Uno-Project/
   
 To more info about the game and how's done, check
 the file named Documentazione.pdf.
