@@ -230,7 +230,7 @@ function draw() {
   StampaCarta(width/2 + ImageWidth/1.15, height/2, CartaTerra.Valore, CartaTerra.Colore);
   
   // Se la condizione è vera, le carte non devono più essere distribuite
-  if(cardsToGive && CarteGiocatoriN[NumeroGiocatori - 1] == 2) {
+  if(cardsToGive && CarteGiocatoriN[NumeroGiocatori - 1] == 7) {
     cardsToGive = false;
     TurnoAttuale = 0;
     canClick = true;
