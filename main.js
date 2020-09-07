@@ -44,7 +44,6 @@ var menuIsShown; // Flag che rappresenta la presenza/assenza del menu
 var gameEnded; // Flag che indica la fine del gioco
 var punteggioCalcolato; // Flag che indica se il punteggio è stato calcolato o meno
 var counterStampaIsOn; // Flag che indica se il counterStampa è attivo
-let punteggio; // Contiene il punteggio dei giocatori
 let counterStampa; // Serve a stampare la classifica con un delay
   
 var ImageWidth; // Larghezza di ogni carta
@@ -76,6 +75,7 @@ var senso = []; // Conserva le immagini delle frecce che indicano il giro attual
 var imageMenu = []; // Conserva le immagini inerenti al menu
 var classificaImage = []; // Conserva le immagini per la classifica finale
 var sfondoCrediti; // Conserva l'immagine sfondo dei crediti
+var punteggio = [];
 var fontClassifica;
 
 
@@ -132,7 +132,7 @@ function setup() {
   createCanvas(window.innerWidth, window.innerWidth/1.78);
   //createCanvas(960, 540);
   //createCanvas(1920,1080);
-  fullscreen(true);
+  //fullscreen(true);
   frameRate(60);
   InizializzazioneGame();
 }
@@ -150,7 +150,14 @@ function InizializzazioneGame() {
   ContaFrame = 0;
   imageMode(CENTER);
   angleMode(DEGREES);
-  MazzoN = 0; InizializzaMazzo();
+  MazzoN = 0; Mazzo = [];
+  /*while(Mazzo.lenght > 0) {
+  	Mazzo.pop();
+  }
+  while(punteggio.lenght > 0) {
+  	punteggio.pop();
+  }*/
+  InizializzaMazzo();
   CartaTerra = PescaCarta();
   sensoOrario = true;
   mustClickUno = false;
@@ -223,7 +230,7 @@ function draw() {
   StampaCarta(width/2 + ImageWidth/1.15, height/2, CartaTerra.Valore, CartaTerra.Colore);
   
   // Se la condizione è vera, le carte non devono più essere distribuite
-  if(cardsToGive && CarteGiocatoriN[NumeroGiocatori - 1] == 7) {
+  if(cardsToGive && CarteGiocatoriN[NumeroGiocatori - 1] == 2) {
     cardsToGive = false;
     TurnoAttuale = 0;
     canClick = true;
@@ -242,7 +249,7 @@ function draw() {
   	
   	let n = CarteGiocatoriN[TurnoAttuale];
   	stroke(255, 255, 255);
-  	strokeWeight(5);
+  	strokeWeight(int(0.0026042*width));
   	fill(255,255,255,40)
   	rectMode(CENTER);
   		
@@ -383,8 +390,8 @@ function mousePressed() {
   // Controllo per prendere una carta dal mazzo
   if((mouseX >= xMazzo - ImageWidth/2) &&
      (mouseX <= xMazzo + ImageWidth/2) &&
-     (mouseY >= yMazzo - ImageWidth/2) &&
-     (mouseY <= yMazzo + ImageWidth/2)) {
+     (mouseY >= yMazzo - ImageHeight/2) &&
+     (mouseY <= yMazzo + ImageHeight/2)) {
      
      CarteGiocatori[0][CarteGiocatoriN[0]] = PescaCarta();
      CarteGiocatoriN[0]++;
@@ -584,6 +591,7 @@ function GettaCarta(Giocatore, index, ColoreBOT) {
   
   if(CarteGiocatoriN[Giocatore] == 0) {
     gameEnded = true;
+    print("GettaCarta(" + Giocatore);
   }
   
   if(Giocatore == 0 && CarteGiocatoriN[Giocatore] == 1) {
@@ -922,9 +930,10 @@ function classifica() {
     
 
     if(mouseIsPressed) {
-      cursor();
+      
+      //location.reload();
       InizializzazioneGame();
-    
+   	  return;
     }
     
   } else document.body.style.cursor = "default";
@@ -932,8 +941,8 @@ function classifica() {
   // Calcolo del punteggio
   if(punteggioCalcolato == false) {
   	punteggioCalcolato = true;
-  	punteggio = contaPunti();
-  	SeleSort(punteggio);
+  	contaPunti();
+  	SeleSort();
   	counterStampa = 0;
   }
   
@@ -942,18 +951,24 @@ function classifica() {
   textSize(width/30); textAlign(CENTER, CENTER);
   strokeWeight(5);
 
+  //Variabili colori posizioni
+  let coloreQuartoPosto = "#986a45";
+  let coloreTerzoPosto = "#cd7f32";
+  let coloreSecondoPosto = "#c0c0c0";
+  let colorePrimoPosto = "#cda434";
+
+  strokeWeight(int(0.0026042*width));stroke(0);
+
   if(counterStampa >= 90) {
-	
-  	stroke(100);
 
   	let L = 0.16 * width;
   	let A = 0.11 * height;
   	let x = 0.613 * width;
   	let y = height - height*0.62;
 
-  	//text("P1", x + L/2, y + A/2);
+  	// Stampa quarta posizione
+  	fill(coloreQuartoPosto);
   	text(("P" + str(punteggio[0].pos+1)), x + L/2, y + A/2);
-  	print(("P" + str(punteggio[0].pos)));
 
   }
   if(counterStampa >= 180) {
@@ -963,10 +978,10 @@ function classifica() {
   	let x = 0.42 * width;
   	let y = height - height*0.62;
 
-  	//text("P2",x + L/2, y + A/2);
+  	// Stampa terza posizione
+  	fill(coloreTerzoPosto);
   	text(("P" + str(punteggio[1].pos+1)), x + L/2, y + A/2);
-  	print(("P" + str(punteggio[1].pos)));
-
+  	
   }
   if(counterStampa >= 270) {
 
@@ -975,19 +990,20 @@ function classifica() {
   	let x = 0.227 * width;
   	let y = height - height*0.62
 
-  	//text("P3", x + L/2, y + A/2);
+  	// Stampa seconda posizione
+  	fill(coloreSecondoPosto);
   	text(("P" + str(punteggio[2].pos+1)), x + L/2, y + A/2);
-  	print(("P" + str(punteggio[2].pos)));
-
+  	
   }
   if(counterStampa >= 360) {
 
-  	// Stampa P* per Vincitore
   	let L = 0.22 * width;
   	let A = 0.11 * height;
   	let x = 0.39 * width;
   	let y = height - height*0.80;
 
+  	// Stampa prima posizione
+  	fill(colorePrimoPosto);
   	text(("P" + str(punteggio[3].pos+1)), x + L/2, y + A/2);
   	
   	counterStampaIsOn = false;
@@ -1006,23 +1022,57 @@ function classifica() {
  *   SeleSort. Ordina lo struct punteggio   *
  *                                          *
  *******************************************/
-function SeleSort(a) {
+function SeleSort() {
 
-  let min, temp;
+  let temp = {
+  	val: 0,
+  	pos: 0
+  };
+  let min;
+  for(let i = 0; i < 4; i++)
+  	print("Punteggio["+i+"]:{"+punteggio[i].val+","+punteggio[i].pos+"}");
 
-  let i, j;
-  
-  for (i = 0; i < NumeroGiocatori - 1; i++) {
+  // --- Inizio Ordinamento ---
+  for (let i = 0; i < NumeroGiocatori - 1; i++) {
     min = i;
 
-    for (j = i + 1; j < NumeroGiocatori; j++)
-      if (a[j].val < a[min].val)
-        min = j;
+    for(let j = i + 1; j < NumeroGiocatori; j++)
+   	  if(punteggio[j].val < punteggio[min].val) {
+      	min = j;
+      }
+     
+    temp = punteggio[i];
 
-    temp = a[min];
-    a[min] = a[i];
-    a[i] = temp;
+    punteggio[i] = punteggio[min];
+    
+    punteggio[min] = temp;
+    
   }
+
+  punteggio.reverse();
+  // --- Fine Ordinamento---
+  /*
+  for(let i = 0; i < 4; i++)
+  	print("Punteggio["+i+"]:{"+punteggio[i].val+","+punteggio[i].pos+"}");
+
+
+  // Scambia gli indici con .pos
+  for(let i = 0; i < NumeroGiocatori; i++) {
+
+  	while(punteggio[i].pos != i) {
+
+      temp = punteggio[i]; let a = punteggio[i].pos;
+      punteggio[i] = punteggio[ a ];
+      punteggio[ a ] = temp;
+
+      print(punteggio[i].pos + " - " + punteggio[a].pos);
+  	}
+
+  }
+
+  for(let i = 0; i < 4; i++)
+  	print("Punteggio["+i+"]:{"+punteggio[i].val+","+punteggio[i].pos+"}");
+  */
 }
 
 
@@ -1036,26 +1086,32 @@ function SeleSort(a) {
  *******************************************/
 function contaPunti() {
 
-  let punteggio = [];
-
   for (let i = 0; i < 4; i++) {
 
-  	punteggio.push({pos: i, val: 0});
+  	punteggio[i] = {
+  		pos: i,
+  		val: 0
+  	}
+  	//punteggio.push({pos: i, val: 0});
     
-    for (let j = 0; j < CarteGiocatoriN[i]; j  ) {
+    for (let j = 0; j < CarteGiocatoriN[i]; j++) {
 
       //Valore carte " 4" e "Cambio colore" = 50
-      if (CarteGiocatori[i][j].Valore == 13 || CarteGiocatori[i][j].Valore == 14)
-        punteggio[i].val = 50;
+      if (CarteGiocatori[i][j].Valore == 13 || CarteGiocatori[i][j].Valore == 14) {
+        punteggio[i].val += 50;
+        punteggio[i].pos = i;
+      } else
       //Valore carte "Cambio giro", "Stop" e " 2" = 20
-      else if (CarteGiocatori[i][j].Valore >= 10 || CarteGiocatori[i][j].Valore <= 12)
-        punteggio[i].val = 20;
-      //Valore carte normali
-      else punteggio[i].val  = CarteGiocatori[i][j].Valore;
+      if (CarteGiocatori[i][j].Valore >= 10 && CarteGiocatori[i][j].Valore <= 12) {
+        punteggio[i].val += 20;
+    	punteggio[i].pos = i;
+      } else {
+        //Valore carte normali
+        punteggio[i].val += CarteGiocatori[i][j].Valore;
+        punteggio[i].pos = i;
+  	  }
     }
   }
-
-  return punteggio;
 }
 
 
