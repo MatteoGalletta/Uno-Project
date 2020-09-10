@@ -1,27 +1,29 @@
 /*
  * UNO REMAKE
  *
- * Made by: Matteo Galletta, Flavio Carpinteri, Kevin Speranza
- * on day: 01/09/2020
- * using library: p5.js
- * at website: https://www.p5js.org
+ * Realizzato da: Matteo Galletta, Flavio Carpinteri, Kevin Speranza
+ * nel giorno: 01/09/2020
+ * con la libreria: p5.js
+ * dal sito: https://www.p5js.org
  * 
- * JavaScript & p5js learnt by: Daniel Shiffman
+ * JavaScript & p5js imparati da: Daniel Shiffman
  *   a.k.a. The Coding Train
  *     @ https://www.youtube.com/c/TheCodingTrain
  * 
- * UNO Rules took from: https://www.officialgamerules.org/uno
+ * Regole Ufficiali UNO prese da: https://www.officialgamerules.org/uno
  *
- * Software Version: v1.0a
+ * Versione Software: v1.0a
  *
  */
 
+/* --- Variabili ---
+ (Possono essere omesse, mantenute per questioni di ordine)*/
 
 /* Dimensioni della carta rispetto al canvas.
  *  Più RATIO è alto, più le dimensioni delle
  *  carte saranno inferiori.
  *  Esempio:
- *  RATIO = 5 -> Le carte occuperanno un quinto dello schermo (1/5)
+ *  RATIO = 13 -> Le carte occuperanno un quinto dello schermo (1/13)
  * è suggerito lasciare questo valore invariato.
  */
 const RATIO = 13;
@@ -29,35 +31,37 @@ const NumeroGiocatori = 4; // non modificare
 
 var Mazzo = []; // Contiene tutte le carte del mazzo da cui verranno pescate le carte
 var MazzoN; // Conta il numero di carte presenti all'interno del mazzo
-var ContaFrame; // Conta il numero dei frame, utilizzato per funzioni di Animazioni. (Pausa)
-var TurnoAttuale; // Indica il giocatore a cui tocca effettuare la mossa
-var ColoreAttuale; // Indica il colore attuale
-var cardsToGive; // Flag che indica se assegnare le carte ai giocatori
-var canClick; // Flag che indica se il giocatore ha il permesso di cliccare
-var botHasPlayed; // Flag che indica se il bot in quel turno ha giocato
-var mustChooseColor; // Flag che indica se il giocatore deve scegliere un colore
+var contaFrame; // Conta il numero dei frame, utilizzato per funzioni di Animazioni. (Pausa)
+var turnoAttuale; // Indica il giocatore a cui tocca effettuare la mossa
+var coloreAttuale; // Indica il colore attuale
+var carteDaDare; // Flag che indica se assegnare le carte ai giocatori
+var puoCliccare; // Flag che indica se il giocatore ha il permesso di cliccare
+var botHaGiocato; // Flag che indica se il bot in quel turno ha giocato
+var deveScegliereColore; // Flag che indica se il giocatore deve scegliere un colore
 var sensoOrario; // Flag che indica se il senso è orario o antiorario
-var mustClickUno; // Flag che indica se il player deve o meno cliccare Uno
-var UnoCount; // Serve a far partire un timer per il tasto Uno
+var deveCliccareUno; // Flag che indica se il player deve o meno cliccare Uno
+var unoCount; // Serve a far partire un timer per il tasto Uno
 var statoCrediti; // Flag per gestire l'apertura del popup "crediti"
-var menuIsShown; // Flag che rappresenta la presenza/assenza del menu
-var gameEnded; // Flag che indica la fine del gioco
+var menuMostrato; // Flag che rappresenta la presenza/assenza del menu
+var giocoTerminato; // Flag che indica la fine del gioco
 var punteggioCalcolato; // Flag che indica se il punteggio è stato calcolato o meno
 var counterStampaIsOn; // Flag che indica se il counterStampa è attivo
-let counterStampa; // Serve a stampare la classifica con un delay
-  
-var ImageWidth; // Larghezza di ogni carta
-var ImageHeight; // Altezza di ogni carta
+var counterStampa; // Serve a stampare la classifica con un delay
+var altezzaCanvas; // Conserva l'altezza del canvas
+var larghezzaCanvas; // Conserva la larghezza del canvas
 
-var CarteGiocatori = [ // Contiene le carte dei giocatori
+var imageWidth; // Larghezza di ogni carta
+var imageHeight; // Altezza di ogni carta
+
+var carteGiocatori = [ // Contiene le carte dei giocatori
   [], // Giocatore 1 [Bottom]
   [], // Giocatore 2 [Left]
   [], // Giocatore 3 [Top]
   []  // Giocatore 4 [Right]
 ];
-var CarteGiocatoriN = []; // Conserva il numero di carte che ogni giocatore ha
+var carteGiocatoriN = []; // Conserva il numero di carte che ogni giocatore ha
 
-var CartaTerra = { // Rappresenta la carta a terra
+var cartaTerra = { // Rappresenta la carta a terra
   Valore: 0,
   Colore: 0
 };
@@ -129,12 +133,36 @@ function preload() {
 function setup() {
   // Dimensione del canvas che si adatta alla larghezza dello schermo.
   // Il formato forzato corrisponde a 16:9.
-  createCanvas(window.innerWidth, window.innerWidth/1.78);
+
+  calcolaDimensioniCanvas();
+
+  createCanvas(larghezzaCanvas, altezzaCanvas);
   //createCanvas(960, 540);
   //createCanvas(1920,1080);
   //fullscreen(true);
   frameRate(60);
-  InizializzazioneGame();
+  InizializzaGioco();
+}
+
+ /*******************************************
+ *                                          *
+ *    Calcola le dimensioni del canvas.     *
+ *    Lo adatta in modo tale che sia in     *
+ *   formato 16:9, e che nulla sia fuori    *
+ *              dallo schermo               *
+ *                                          *
+ *******************************************/
+function calcolaDimensioniCanvas() {
+  larghezzaCanvas = window.innerWidth;
+  altezzaCanvas = window.innerHeight;
+
+  let RatioSchermo = larghezzaCanvas / altezzaCanvas;
+
+  if(RatioSchermo > 1.78) {
+    larghezzaCanvas = altezzaCanvas * 1.78;
+  } else {
+    altezzaCanvas = larghezzaCanvas / 1.78;
+  }
 }
 
  /*******************************************
@@ -146,8 +174,8 @@ function setup() {
  *  correttamente, con i parametri corretti *
  *                                          *
  *******************************************/
-function InizializzazioneGame() {
-  ContaFrame = 0;
+function InizializzaGioco() {
+  contaFrame = 0;
   imageMode(CENTER);
   angleMode(DEGREES);
   MazzoN = 0; Mazzo = [];
@@ -158,37 +186,37 @@ function InizializzazioneGame() {
   	punteggio.pop();
   }*/
   InizializzaMazzo();
-  CartaTerra = PescaCarta();
+  cartaTerra = PescaCarta();
   sensoOrario = true;
-  mustClickUno = false;
-  UnoCount = 0; ContaFrame = 0;
+  deveCliccareUno = false;
+  unoCount = 0; contaFrame = 0;
   statoCrediti = false;
-  menuIsShown = true;
-  gameEnded = false;
+  menuMostrato = true;
+  giocoTerminato = false;
   punteggioCalcolato = false;
 
   counterStampaIsOn = true;
   
   for(let i = 0; i < 4; i++) {
-    CarteGiocatoriN[i] = 0;
+    carteGiocatoriN[i] = 0;
   }
   
-  if(CartaTerra.Colore != 4) {
-    ColoreAttuale = CartaTerra.Colore;
-    mustChooseColor = false;
+  if(cartaTerra.Colore != 4) {
+    coloreAttuale = cartaTerra.Colore;
+    deveScegliereColore = false;
   }
   else {
-    ColoreAttuale = 4;
-    mustChooseColor = true;
+    coloreAttuale = 4;
+    deveScegliereColore = true;
   }
   
   DimensioniCarta();
-  TurnoAttuale = 0; // Inizia il giocatore 0
-  cardsToGive = true;
-  canClick = false;
+  turnoAttuale = 0; // Inizia il giocatore 0
+  carteDaDare = true;
+  puoCliccare = false;
   
   for(let n = 0; n < NumeroGiocatori; n++)
-    CarteGiocatoriN[n] = 0;
+    carteGiocatoriN[n] = 0;
   
   
 }
@@ -201,16 +229,18 @@ function InizializzazioneGame() {
  *******************************************/
 function draw() {
   
-  resizeCanvas(window.innerWidth, window.innerWidth/1.78);
+  // Adatta il canvas allo schermo correttamente
+  calcolaDimensioniCanvas();
+  resizeCanvas(larghezzaCanvas, altezzaCanvas);
   DimensioniCarta();
   
-  // Se il flag gameEnded è vero, la classifica viene mostrata
-  if(gameEnded) {
+  // Se il flag giocoTerminato è vero, la classifica viene mostrata
+  if(giocoTerminato) {
     classifica();
     return;
   }
-  // Se il flag menuIsShown è vero, il menu viene mostrato
-  if(menuIsShown) {
+  // Se il flag menuMostrato è vero, il menu viene mostrato
+  if(menuMostrato) {
     menu();
     return;
   }
@@ -218,57 +248,57 @@ function draw() {
   imageMode(CENTER);
   
   // Stampa la prima carta, che viene disposta al centro del canvas.
-  image(wallpapers[ColoreAttuale], width/2, height/2, width, height);
+  image(wallpapers[coloreAttuale], width/2, height/2, width, height);
   
   image(senso[(sensoOrario?1:0)], width/2, height/2, senso[(sensoOrario?1:0)].width/(1920/width), senso[(sensoOrario?1:0)].height/(1080/height));
   
   // Stampa la carta che rappresenta il mazzo
   if(MazzoN > 0)
-    StampaCarta(width/2 - ImageWidth/1.15, height/2, 15, 4);
+    StampaCarta(width/2 - imageWidth/1.15, height/2, 15, 4);
   
   // Stampa la carta a terra, quindi l'ultima buttata
-  StampaCarta(width/2 + ImageWidth/1.15, height/2, CartaTerra.Valore, CartaTerra.Colore);
+  StampaCarta(width/2 + imageWidth/1.15, height/2, cartaTerra.Valore, cartaTerra.Colore);
   
   // Se la condizione è vera, le carte non devono più essere distribuite
-  if(cardsToGive && CarteGiocatoriN[NumeroGiocatori - 1] == 7) {
-    cardsToGive = false;
-    TurnoAttuale = 0;
-    canClick = true;
+  if(carteDaDare && carteGiocatoriN[NumeroGiocatori - 1] == 7) {
+    carteDaDare = false;
+    turnoAttuale = 0;
+    puoCliccare = true;
   }
   
-  if(ContaFrame == 10 && cardsToGive) { // Vengono distribuite 6 carte al secondo (60/10)
-    ContaFrame = 0;
-    CarteGiocatori[TurnoAttuale][CarteGiocatoriN[TurnoAttuale]] = PescaCarta();
-    CarteGiocatoriN[TurnoAttuale]++;
+  if(contaFrame == 10 && carteDaDare) { // Vengono distribuite 6 carte al secondo (60/10)
+    contaFrame = 0;
+    carteGiocatori[turnoAttuale][carteGiocatoriN[turnoAttuale]] = PescaCarta();
+    carteGiocatoriN[turnoAttuale]++;
     
-    TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+    turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
     
   }
   
-  if(cardsToGive == false) {
+  if(carteDaDare == false) {
   	
-  	let n = CarteGiocatoriN[TurnoAttuale];
+  	let n = carteGiocatoriN[turnoAttuale];
   	stroke(255, 255, 255);
   	strokeWeight(int(0.0026042*width));
   	fill(255,255,255,40)
   	rectMode(CENTER);
   		
 
-  	if(TurnoAttuale == 0 || TurnoAttuale == 2) {
+  	if(turnoAttuale == 0 || turnoAttuale == 2) {
   		
-  		let Larghezza = (n/2 + 1)*ImageWidth;
-  		let Altezza = 1.25*ImageHeight;
+  		let Larghezza = (n/2 + 1)*imageWidth;
+  		let Altezza = 1.25*imageHeight;
 
-  		let y = (TurnoAttuale == 0) ? (height-height/7) : height/7;
-  		rect(width/2, y, Larghezza, Altezza, ImageHeight/5);
+  		let y = (turnoAttuale == 0) ? (height-height/7) : height/7;
+  		rect(width/2, y, Larghezza, Altezza, imageHeight/5);
 
   	} else
-  	if(TurnoAttuale == 1 || TurnoAttuale == 3) {
-  		let Larghezza = ImageWidth*1.25;
-  		let Altezza = (n/3 + 1)*ImageHeight;
+  	if(turnoAttuale == 1 || turnoAttuale == 3) {
+  		let Larghezza = imageWidth*1.25;
+  		let Altezza = (n/3 + 1)*imageHeight;
 
-  		let x = ((TurnoAttuale == 1) ? width/12.5 : (width - width/12.5));
-  		rect(x, height/2, Larghezza, Altezza, ImageHeight/5);
+  		let x = ((turnoAttuale == 1) ? width/12.5 : (width - width/12.5));
+  		rect(x, height/2, Larghezza, Altezza, imageHeight/5);
   	}
   }
 
@@ -278,31 +308,31 @@ function draw() {
   
   // --- INIZIO GIOCO ---
   
-  if(ContaFrame == 90 && mustChooseColor == false) { // Tra un bot e l'altro, passano 120 frames
+  if(contaFrame == 90 && deveScegliereColore == false) { // Tra un bot e l'altro, passano 120 frames
     
-    if(TurnoAttuale != 0)  
-      TurnoBot(TurnoAttuale);
+    if(turnoAttuale != 0)  
+      TurnoBot(turnoAttuale);
 
   }
   
-  if(mustClickUno == true) {
-    UnoCount++;
+  if(deveCliccareUno == true) {
+    unoCount++;
   }
   
-  if(UnoCount == 150) {
-    mustClickUno = false;
-    UnoCount = 0;
+  if(unoCount == 150) {
+    deveCliccareUno = false;
+    unoCount = 0;
     
-    CarteGiocatori[0][CarteGiocatoriN[0]++] = PescaCarta();
-    CarteGiocatori[0][CarteGiocatoriN[0]++] = PescaCarta();
+    carteGiocatori[0][carteGiocatoriN[0]++] = PescaCarta();
+    carteGiocatori[0][carteGiocatoriN[0]++] = PescaCarta();
     
   }
   
-  if(MazzoN == 0) gameEnded = true;
+  if(MazzoN == 0) giocoTerminato = true;
 
   // Timer: 90 frame -> Un secondo e mezzo
-  if(ContaFrame == 90) ContaFrame = 0;
-  else ContaFrame++;
+  if(contaFrame == 90) contaFrame = 0;
+  else contaFrame++;
 }
 
  /*******************************************
@@ -311,17 +341,17 @@ function draw() {
  *                                          *
  *******************************************/
 function mouseClicked() {
-  if(mouseX >= width/2 - ImageWidth/4 &&
-     mouseX <= width/2 + ImageWidth/4 &&
-     mouseY >= height/2 - ImageHeight/3 &&
-     mouseY <= height/2 + ImageHeight/3) {
+  if(mouseX >= width/2 - imageWidth/4 &&
+     mouseX <= width/2 + imageWidth/4 &&
+     mouseY >= height/2 - imageHeight/3 &&
+     mouseY <= height/2 + imageHeight/3) {
      
-    if(mustClickUno == true) {
-      mustClickUno = false;
-      UnoCount = 0;
+    if(deveCliccareUno == true) {
+      deveCliccareUno = false;
+      unoCount = 0;
     }
     else {
-      UnoCount = 150;
+      unoCount = 150;
     }
   }
   
@@ -339,9 +369,9 @@ function mouseClicked() {
  *******************************************/
 function mousePressed() {
   
-  if(menuIsShown) return;
+  if(menuMostrato) return;
   
-  if(mustChooseColor) {
+  if(deveScegliereColore) {
     
     let centerX = width/2;
     let centerY = height/2;
@@ -349,92 +379,92 @@ function mousePressed() {
     // Coordinate corrispondenti all'angolo in alto a sinistra dei pulsanti
     
     // Se il mouse tocca il pulsante...
-    if(mouseX >= centerX - (width/34 + ImageWidth + width/128) &&
-       mouseX <= centerX + (width/34 + ImageWidth + width/128) &&
-       mouseY >= centerY - (ImageHeight/2 + width/35) &&
-       mouseY <= centerY - (ImageHeight/2 + width/128)) { //...Blu (Sopra)
-      ColoreAttuale = 0;
+    if(mouseX >= centerX - (width/34 + imageWidth + width/128) &&
+       mouseX <= centerX + (width/34 + imageWidth + width/128) &&
+       mouseY >= centerY - (imageHeight/2 + width/35) &&
+       mouseY <= centerY - (imageHeight/2 + width/128)) { //...Blu (Sopra)
+      coloreAttuale = 0;
     } else
-    if(mouseX >= centerX - (width/34 + ImageWidth + width/128) &&
-       mouseX <= centerX + (width/34 + ImageWidth + width/128) &&
-       mouseY >= centerY + (ImageHeight/2 + width/128) &&
-       mouseY <= centerY + (ImageHeight/2 + width/35)){ //...Verde (Sotto)
-      ColoreAttuale = 1;
+    if(mouseX >= centerX - (width/34 + imageWidth + width/128) &&
+       mouseX <= centerX + (width/34 + imageWidth + width/128) &&
+       mouseY >= centerY + (imageHeight/2 + width/128) &&
+       mouseY <= centerY + (imageHeight/2 + width/35)){ //...Verde (Sotto)
+      coloreAttuale = 1;
     } else
-    if(mouseX >= centerX - (width/34 + ImageWidth + width/35) &&
-       mouseX <= centerX - (width/34 + ImageWidth + width/128)&&
-       mouseY >= centerY - (ImageHeight/2) &&
-       mouseY <= centerY + (ImageHeight/2)) { //...Rosso (Sinistra)
-      ColoreAttuale = 2;
+    if(mouseX >= centerX - (width/34 + imageWidth + width/35) &&
+       mouseX <= centerX - (width/34 + imageWidth + width/128)&&
+       mouseY >= centerY - (imageHeight/2) &&
+       mouseY <= centerY + (imageHeight/2)) { //...Rosso (Sinistra)
+      coloreAttuale = 2;
     } else
-    if(mouseX >= centerX + (width/34 + ImageWidth + width/128) &&
-       mouseX <= centerX + (width/34 + ImageWidth + width/35)&&
-       mouseY >= centerY - (ImageHeight/2) &&
-       mouseY <= centerY + (ImageHeight/2)) { //...Giallo (Destra)
-      ColoreAttuale = 3;
+    if(mouseX >= centerX + (width/34 + imageWidth + width/128) &&
+       mouseX <= centerX + (width/34 + imageWidth + width/35)&&
+       mouseY >= centerY - (imageHeight/2) &&
+       mouseY <= centerY + (imageHeight/2)) { //...Giallo (Destra)
+      coloreAttuale = 3;
     }
-    if(ColoreAttuale != 4) {
-      mustChooseColor = false;
-      //TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+    if(coloreAttuale != 4) {
+      deveScegliereColore = false;
+      //turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
     }
     return;
   }
   
-  //if(canClick == false) return false;
-  if(TurnoAttuale != 0) return false;
+  //if(puoCliccare == false) return false;
+  if(turnoAttuale != 0) return false;
   
   // Coordinate centrali della carta del mazzo
-  let xMazzo = width/2 - ImageWidth/1.15;
+  let xMazzo = width/2 - imageWidth/1.15;
   let yMazzo = height/2;
   
   // Controllo per prendere una carta dal mazzo
-  if((mouseX >= xMazzo - ImageWidth/2) &&
-     (mouseX <= xMazzo + ImageWidth/2) &&
-     (mouseY >= yMazzo - ImageHeight/2) &&
-     (mouseY <= yMazzo + ImageHeight/2)) {
+  if((mouseX >= xMazzo - imageWidth/2) &&
+     (mouseX <= xMazzo + imageWidth/2) &&
+     (mouseY >= yMazzo - imageHeight/2) &&
+     (mouseY <= yMazzo + imageHeight/2)) {
      
-     CarteGiocatori[0][CarteGiocatoriN[0]] = PescaCarta();
-     CarteGiocatoriN[0]++;
-     TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+     carteGiocatori[0][carteGiocatoriN[0]] = PescaCarta();
+     carteGiocatoriN[0]++;
+     turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
   }
   
   // Controllo per l'ultima carta, con area quindi doppia
-  if((mouseX >= CarteGiocatori[0][CarteGiocatoriN[0]-1].X - ImageWidth/2) &&
-     (mouseX <= CarteGiocatori[0][CarteGiocatoriN[0]-1].X + ImageWidth/2) &&
-     (mouseY >= CarteGiocatori[0][CarteGiocatoriN[0]-1].Y - ImageHeight/2) &&
-     (mouseY <= CarteGiocatori[0][CarteGiocatoriN[0]-1].Y + ImageHeight/2)) {
-    let bef = CarteGiocatori[0][CarteGiocatoriN[0]-1];
-    GettaCarta(0,CarteGiocatoriN[0]-1);
-    let aft = CarteGiocatori[0][CarteGiocatoriN[0]-1];
+  if((mouseX >= carteGiocatori[0][carteGiocatoriN[0]-1].X - imageWidth/2) &&
+     (mouseX <= carteGiocatori[0][carteGiocatoriN[0]-1].X + imageWidth/2) &&
+     (mouseY >= carteGiocatori[0][carteGiocatoriN[0]-1].Y - imageHeight/2) &&
+     (mouseY <= carteGiocatori[0][carteGiocatoriN[0]-1].Y + imageHeight/2)) {
+    let bef = carteGiocatori[0][carteGiocatoriN[0]-1];
+    GettaCarta(0,carteGiocatoriN[0]-1);
+    let aft = carteGiocatori[0][carteGiocatoriN[0]-1];
     if(bef != aft)
-      TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+      turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
   }
   // Controllo per tutte le carte, esclusa l'ultima
-  for(let n = 0; n < CarteGiocatoriN[0]; n++) {
+  for(let n = 0; n < carteGiocatoriN[0]; n++) {
     
     // Controlla se il mouse abbia cliccato una carta
-    if((mouseX >= CarteGiocatori[0][n].X - ImageWidth/2) &&
-       (mouseX <= CarteGiocatori[0][n].X ) &&
-       (mouseY >= CarteGiocatori[0][n].Y - ImageHeight/2) &&
-       (mouseY <= CarteGiocatori[0][n].Y + ImageHeight/2)) {
+    if((mouseX >= carteGiocatori[0][n].X - imageWidth/2) &&
+       (mouseX <= carteGiocatori[0][n].X ) &&
+       (mouseY >= carteGiocatori[0][n].Y - imageHeight/2) &&
+       (mouseY <= carteGiocatori[0][n].Y + imageHeight/2)) {
       
-      if(CarteGiocatori[0][n].Colore == 4) {
-        mustChooseColor = true;
+      if(carteGiocatori[0][n].Colore == 4) {
+        deveScegliereColore = true;
       }
       
       // Se si clicca su una carta che non è possibile
       // buttare, il turno non viene sprecato.
-      let bef = CarteGiocatori[0][n];
+      let bef = carteGiocatori[0][n];
       GettaCarta(0, n);
-      let aft = CarteGiocatori[0][n];
+      let aft = carteGiocatori[0][n];
       if(bef != aft)
-        TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+        turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
 
     
     }
     
   }
-  ContaFrame = 0;
+  contaFrame = 0;
 }
 
  /*******************************************
@@ -464,8 +494,8 @@ function GiocatoreSuccessivo(Giocatore) {
  *                                          *
  *******************************************/
 function TurnoBot(Giocatore) {
-  let Carte = CarteGiocatori[Giocatore];
-  let N = CarteGiocatoriN[Giocatore];
+  let Carte = carteGiocatori[Giocatore];
+  let N = carteGiocatoriN[Giocatore];
   
   let daButtareValore = -10;
   let index = -1;
@@ -485,8 +515,8 @@ function TurnoBot(Giocatore) {
       Carta.Valore -= 15;
       modified[n] = true;
     } else modified[n] = false;
-    if((Carta.Valore == CartaTerra.Valore || // HANNO VALORE DIVERSO
-        Carta.Colore == ColoreAttuale || // HANNO COLORE UGUALE
+    if((Carta.Valore == cartaTerra.Valore || // HANNO VALORE DIVERSO
+        Carta.Colore == coloreAttuale || // HANNO COLORE UGUALE
         Carta.Colore == 4 ) && // LA CARTA DA BUTTARE E' GRIGIA
           Carta.Valore > daButtareValore ){ // Si preferisce buttare una carta con valore elevato
       
@@ -515,10 +545,10 @@ function TurnoBot(Giocatore) {
     GettaCarta(Giocatore, index, maxIndex);
   }
   else {
-    CarteGiocatori[Giocatore][CarteGiocatoriN[Giocatore]] = PescaCarta();
-    CarteGiocatoriN[Giocatore]++;
+    carteGiocatori[Giocatore][carteGiocatoriN[Giocatore]] = PescaCarta();
+    carteGiocatoriN[Giocatore]++;
   }
-  TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+  turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
   
   
 }
@@ -533,69 +563,69 @@ function TurnoBot(Giocatore) {
 function GettaCarta(Giocatore, index, ColoreBOT) {
   let isGray = false;
   
-  let CartaDaButtare = CarteGiocatori[Giocatore][index];
+  let CartaDaButtare = carteGiocatori[Giocatore][index];
   
-  if(CartaDaButtare.Valore != CartaTerra.Valore &&
-     CartaDaButtare.Colore != ColoreAttuale){
+  if(CartaDaButtare.Valore != cartaTerra.Valore &&
+     CartaDaButtare.Colore != coloreAttuale){
     
     if(CartaDaButtare.Colore == 4) isGray = true;
     else return false; 
   }
   
   
-  if(CartaDaButtare.Valore == CartaTerra.Valore ||
-     CartaDaButtare.Colore == ColoreAttuale ||
+  if(CartaDaButtare.Valore == cartaTerra.Valore ||
+     CartaDaButtare.Colore == coloreAttuale ||
      isGray) {
     
-    CartaTerra.Valore = CarteGiocatori[Giocatore][index].Valore; // debug1
-    CartaTerra.Colore = CarteGiocatori[Giocatore][index].Colore;
+    cartaTerra.Valore = carteGiocatori[Giocatore][index].Valore; // debug1
+    cartaTerra.Colore = carteGiocatori[Giocatore][index].Colore;
     
-    if(CarteGiocatori[Giocatore][index].Colore != 4) {
-      ColoreAttuale = CartaTerra.Colore;      
+    if(carteGiocatori[Giocatore][index].Colore != 4) {
+      coloreAttuale = cartaTerra.Colore;      
     }
     else {
       if(Giocatore == 0) {
-        ColoreAttuale = 4;
-        mustChooseColor = true;
+        coloreAttuale = 4;
+        deveScegliereColore = true;
       }
       else {
-        ColoreAttuale = ColoreBOT;
+        coloreAttuale = ColoreBOT;
       }
     }
     
     
-    CarteGiocatori[Giocatore][index] =
-      CarteGiocatori[Giocatore][--CarteGiocatoriN[Giocatore]];
+    carteGiocatori[Giocatore][index] =
+      carteGiocatori[Giocatore][--carteGiocatoriN[Giocatore]];
     
   }
   
-  if(CartaTerra.Valore == 10) {
-      TurnoAttuale = GiocatoreSuccessivo(TurnoAttuale);
+  if(cartaTerra.Valore == 10) {
+      turnoAttuale = GiocatoreSuccessivo(turnoAttuale);
   } else
-  if(CartaTerra.Valore == 11) {
+  if(cartaTerra.Valore == 11) {
     sensoOrario = !sensoOrario;
   } else
-  if(CartaTerra.Valore == 12) {
-    let x = GiocatoreSuccessivo(TurnoAttuale);
-    CarteGiocatori[x][CarteGiocatoriN[x]++] = PescaCarta();
-    CarteGiocatori[x][CarteGiocatoriN[x]++] = PescaCarta();
-    TurnoAttuale = x;
+  if(cartaTerra.Valore == 12) {
+    let x = GiocatoreSuccessivo(turnoAttuale);
+    carteGiocatori[x][carteGiocatoriN[x]++] = PescaCarta();
+    carteGiocatori[x][carteGiocatoriN[x]++] = PescaCarta();
+    turnoAttuale = x;
   } else
-  if(CartaTerra.Valore == 14) {
-    let x = GiocatoreSuccessivo(TurnoAttuale);
+  if(cartaTerra.Valore == 14) {
+    let x = GiocatoreSuccessivo(turnoAttuale);
     for(let n = 0; n < 4; n++) {
-      CarteGiocatori[x][CarteGiocatoriN[x]++] = PescaCarta();
+      carteGiocatori[x][carteGiocatoriN[x]++] = PescaCarta();
     }
-    TurnoAttuale = x;
+    turnoAttuale = x;
   }
   
-  if(CarteGiocatoriN[Giocatore] == 0) {
-    gameEnded = true;
+  if(carteGiocatoriN[Giocatore] == 0) {
+    giocoTerminato = true;
     print("GettaCarta(" + Giocatore);
   }
   
-  if(Giocatore == 0 && CarteGiocatoriN[Giocatore] == 1) {
-    mustClickUno = true;
+  if(Giocatore == 0 && carteGiocatoriN[Giocatore] == 1) {
+    deveCliccareUno = true;
   }
   
   
@@ -610,26 +640,26 @@ function GettaCarta(Giocatore, index, ColoreBOT) {
  *                                          *
  *******************************************/
 function StampaMazzo(Giocatore) {
-  let Carte = CarteGiocatori[Giocatore];
-  let CarteN = CarteGiocatoriN[Giocatore]
+  let Carte = carteGiocatori[Giocatore];
+  let CarteN = carteGiocatoriN[Giocatore]
   
-  let Distance = -ImageHeight/3;
+  let Distance = -imageHeight/3;
   let val = (CarteN - 1)/2;
   var start;  
   var x_, y_;
   if(Giocatore == 0) { // Le carte vengono stampate nella parte inferiore del canvas
     
     // Posizione iniziale per stampare le carte perfettamente al centro
-    let start = width/2 - (val*ImageWidth+val*Distance);
+    let start = width/2 - (val*imageWidth+val*Distance);
 
     // Ogni carta viene stampata
     for(let n = 0; n < CarteN; n++) {
-      x_ = start+n*ImageWidth+n*Distance;
+      x_ = start+n*imageWidth+n*Distance;
       y_ = height-height/7;
       
       // Salva le coordinate delle carte appena piazzate
-      CarteGiocatori[0][n].X = x_;
-      CarteGiocatori[0][n].Y = y_;
+      carteGiocatori[0][n].X = x_;
+      carteGiocatori[0][n].Y = y_;
       
       // Stampa la carta
       StampaCarta(x_, y_, Carte[n].Valore, Carte[n].Colore);
@@ -639,22 +669,22 @@ function StampaMazzo(Giocatore) {
   } else
   if(Giocatore == 1) { // Le carte vengono stampate nella parte sinistra del canvas
     
-    start = height/2 - (val*ImageWidth+val*Distance);
+    start = height/2 - (val*imageWidth+val*Distance);
     
     for(let n = 0; n < CarteN; n++) {
       x_ = width/12.5;
-      y_ = start+n*ImageWidth+n*Distance;
+      y_ = start+n*imageWidth+n*Distance;
       StampaCarta(x_, y_, 15, 4); // Le carte sono nascoste, quindi viene stampato il retro
     }
     
   } else
   if(Giocatore == 2) { // Le carte vengono stampate nella parte superiore del canvas
     
-    start = width/2 + (val*ImageWidth+val*Distance);
+    start = width/2 + (val*imageWidth+val*Distance);
 
     // Ogni carta viene stampata
     for(let n = 0; n < CarteN; n++) {
-      x_ = start-n*ImageWidth-n*Distance;
+      x_ = start-n*imageWidth-n*Distance;
       y_ = height/7;
       StampaCarta(x_, y_, 15, 4);
     }
@@ -662,11 +692,11 @@ function StampaMazzo(Giocatore) {
   } else
   if(Giocatore == 3) { // Le carte vengono stampate nella parte destra del canvas
     
-    start = height/2 - (val*ImageWidth+val*Distance);
+    start = height/2 - (val*imageWidth+val*Distance);
     
     for(let n = 0; n < CarteN; n++) {
       x_ = width - width/12.5;
-      y_ = start+n*ImageWidth+n*Distance;
+      y_ = start+n*imageWidth+n*Distance;
       StampaCarta(x_, y_, 15, 4);
     }
     
@@ -687,8 +717,8 @@ function DimensioniCarta() {
   
   let ImageAspectRatio = ImageY/ImageX;
   
-  ImageWidth  = ImageX/(RATIO/(width/ImageX));
-  ImageHeight = ImageWidth*ImageAspectRatio;
+  imageWidth  = ImageX/(RATIO/(width/ImageX));
+  imageHeight = imageWidth*ImageAspectRatio;
   
   
 }
@@ -728,8 +758,8 @@ function StampaCarta(x, y, Valore, Colore) {
   image(img,
         x,
         y,
-        ImageWidth,
-        ImageHeight
+        imageWidth,
+        imageHeight
   );
 }
 
@@ -807,7 +837,7 @@ function menu() {
       image(imageMenu[1], 0, 0, width, height);
 
       if(mouseIsPressed) {
-      	menuIsShown = false;
+      	menuMostrato = false;
       	document.body.style.cursor = "default";
       }
     }
@@ -932,7 +962,7 @@ function classifica() {
     if(mouseIsPressed) {
       
       //location.reload();
-      InizializzazioneGame();
+      InizializzaGioco();
    	  return;
     }
     
@@ -1094,20 +1124,20 @@ function contaPunti() {
   	}
   	//punteggio.push({pos: i, val: 0});
     
-    for (let j = 0; j < CarteGiocatoriN[i]; j++) {
+    for (let j = 0; j < carteGiocatoriN[i]; j++) {
 
       //Valore carte " 4" e "Cambio colore" = 50
-      if (CarteGiocatori[i][j].Valore == 13 || CarteGiocatori[i][j].Valore == 14) {
+      if (carteGiocatori[i][j].Valore == 13 || carteGiocatori[i][j].Valore == 14) {
         punteggio[i].val += 50;
         punteggio[i].pos = i;
       } else
       //Valore carte "Cambio giro", "Stop" e " 2" = 20
-      if (CarteGiocatori[i][j].Valore >= 10 && CarteGiocatori[i][j].Valore <= 12) {
+      if (carteGiocatori[i][j].Valore >= 10 && carteGiocatori[i][j].Valore <= 12) {
         punteggio[i].val += 20;
     	punteggio[i].pos = i;
       } else {
         //Valore carte normali
-        punteggio[i].val += CarteGiocatori[i][j].Valore;
+        punteggio[i].val += carteGiocatori[i][j].Valore;
         punteggio[i].pos = i;
   	  }
     }
