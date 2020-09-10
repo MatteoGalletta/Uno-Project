@@ -133,7 +133,9 @@ function preload() {
 function setup() {
   // Dimensione del canvas che si adatta alla larghezza dello schermo.
   // Il formato forzato corrisponde a 16:9.
-
+  
+  fullscreen(true);
+ 
   calcolaDimensioniCanvas();
 
   createCanvas(larghezzaCanvas, altezzaCanvas);
