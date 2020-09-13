@@ -1,12 +1,12 @@
 # Uno-Project
-Uno remake made on JavaScript.
+Il gioco UNO, riprodotto su JavaScript
 
-Made by:
+Realizzato da:
   Matteo Galletta,
   Flavio Carpinteri,
   Kevin Speranza.
   
-To play the game, visit the wesbite that follows: http://shazeofshiny.github.io/Uno-Project/
-  
-To more info about the game and how's done, check
-the file named Documentazione.pdf.
+Per giocare UNO, cliccare sul link che segue: http://shazeofshiny.github.io/Uno-Project/
+
+Per altre informazioni sul gioco e su com'è fatto, controllare
+il file nominato come "Documentazione.pdf"
