@@ -26,46 +26,49 @@
  *  RATIO = 13 -> Le carte occuperanno un quinto dello schermo (1/13)
  * è suggerito lasciare questo valore invariato.
  */
+
+
+/*
+ * var MazzoN; // Conta il numero di carte presenti all'interno del mazzo
+ * var contaFrame; // Conta il numero dei frame, utilizzato per funzioni di Animazioni. (Pausa)
+ * var turnoAttuale; // Indica il giocatore a cui tocca effettuare la mossa
+ * var coloreAttuale; // Indica il colore attuale
+ * var carteDaDare; // Flag che indica se assegnare le carte ai giocatori
+ * var puoCliccare; // Flag che indica se il giocatore ha il permesso di cliccare
+ * var botHaGiocato; // Flag che indica se il bot in quel turno ha giocato
+ * var deveScegliereColore; // Flag che indica se il giocatore deve scegliere un colore
+ * var sensoOrario; // Flag che indica se il senso è orario o antiorario
+ * var deveCliccareUno; // Flag che indica se il player deve o meno cliccare Uno
+ * var unoCount; // Serve a far partire un timer per il tasto Uno
+ * var statoCrediti; // Flag per gestire l'apertura del popup "crediti"
+ * var menuMostrato; // Flag che rappresenta la presenza/assenza del menu
+ * var giocoTerminato; // Flag che indica la fine del gioco
+ * var punteggioCalcolato; // Flag che indica se il punteggio è stato calcolato o meno
+ * var counterStampaIsOn; // Flag che indica se il counterStampa è attivo
+ * var counterStampa; // Serve a stampare la classifica con un delay
+ * var altezzaCanvas; // Conserva l'altezza del canvas
+ * var larghezzaCanvas; // Conserva la larghezza del canvas
+ * var cartaTerra = { // Rappresenta la carta a terra
+ *   Valore: 0,
+ *   Colore: 0
+ * };
+ * var imageWidth; // Larghezza di ogni carta
+ * var imageHeight; // Altezza di ogni carta
+ * var sfondoCrediti; // Conserva l'immagine sfondo dei crediti
+ * var fontClassifica;
+*/
+
+//Costanti
 const RATIO = 13;
 const NumeroGiocatori = 4; // non modificare
 
+var wallpapers = []; // Conserva gli sfondi, che cambiano in base al colore attuale
+var senso = []; // Conserva le immagini delle frecce che indicano il giro attuale
+var imageMenu = []; // Conserva le immagini inerenti al menu
+var classificaImage = []; // Conserva le immagini per la classifica finale
 var Mazzo = []; // Contiene tutte le carte del mazzo da cui verranno pescate le carte
-var MazzoN; // Conta il numero di carte presenti all'interno del mazzo
-var contaFrame; // Conta il numero dei frame, utilizzato per funzioni di Animazioni. (Pausa)
-var turnoAttuale; // Indica il giocatore a cui tocca effettuare la mossa
-var coloreAttuale; // Indica il colore attuale
-var carteDaDare; // Flag che indica se assegnare le carte ai giocatori
-var puoCliccare; // Flag che indica se il giocatore ha il permesso di cliccare
-var botHaGiocato; // Flag che indica se il bot in quel turno ha giocato
-var deveScegliereColore; // Flag che indica se il giocatore deve scegliere un colore
-var sensoOrario; // Flag che indica se il senso è orario o antiorario
-var deveCliccareUno; // Flag che indica se il player deve o meno cliccare Uno
-var unoCount; // Serve a far partire un timer per il tasto Uno
-var statoCrediti; // Flag per gestire l'apertura del popup "crediti"
-var menuMostrato; // Flag che rappresenta la presenza/assenza del menu
-var giocoTerminato; // Flag che indica la fine del gioco
-var punteggioCalcolato; // Flag che indica se il punteggio è stato calcolato o meno
-var counterStampaIsOn; // Flag che indica se il counterStampa è attivo
-var counterStampa; // Serve a stampare la classifica con un delay
-var altezzaCanvas; // Conserva l'altezza del canvas
-var larghezzaCanvas; // Conserva la larghezza del canvas
-
-var imageWidth; // Larghezza di ogni carta
-var imageHeight; // Altezza di ogni carta
-
-var carteGiocatori = [ // Contiene le carte dei giocatori
-  [], // Giocatore 1 [Bottom]
-  [], // Giocatore 2 [Left]
-  [], // Giocatore 3 [Top]
-  []  // Giocatore 4 [Right]
-];
 var carteGiocatoriN = []; // Conserva il numero di carte che ogni giocatore ha
-
-var cartaTerra = { // Rappresenta la carta a terra
-  Valore: 0,
-  Colore: 0
-};
-
+var punteggio = [];
 
 var Immagini = [ // Conserva le immagini di tutte le carte
   [], // Blue 
@@ -74,13 +77,12 @@ var Immagini = [ // Conserva le immagini di tutte le carte
   [], // Yellow
   []  // Gray
 ];
-var wallpapers = []; // Conserva gli sfondi, che cambiano in base al colore attuale
-var senso = []; // Conserva le immagini delle frecce che indicano il giro attuale
-var imageMenu = []; // Conserva le immagini inerenti al menu
-var classificaImage = []; // Conserva le immagini per la classifica finale
-var sfondoCrediti; // Conserva l'immagine sfondo dei crediti
-var punteggio = [];
-var fontClassifica;
+var carteGiocatori = [ // Contiene le carte dei giocatori
+  [], // Giocatore 1 [Bottom]
+  [], // Giocatore 2 [Left]
+  [], // Giocatore 3 [Top]
+  []  // Giocatore 4 [Right]
+];
 
 
  /*******************************************
